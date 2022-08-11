@@ -6,6 +6,8 @@ module.exports = function (app) {
     var usersRef = firebaseRef.child("users");
     var journalRef = firebaseRef.child("journal");
 
+    var tipsRef = firebaseRef.child("tips");
+
     app.get("/", function (req, res) {
       
       // Example write
@@ -62,6 +64,21 @@ module.exports = function (app) {
       //journalRef.orderBy("userID")
 
       res.render("journal.html");
+    });
+
+    app.get("/tips", function (req, res) {
+
+      tipsRef.once('value', (snapshot) => {
+        if (snapshot.exists()) {
+          var tips = snapshot.val();
+          console.log(tips);
+          res.render("tips.html", {tipsData: tips});
+        } else {
+          console.log("No data available");
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
     });
 
     //app.post()
