@@ -5,81 +5,48 @@ body {
   background-color: #F5F5ED;
 }
 
-header {
-  margin: 0;
-  background: #ffffff;
-  font-family: "Work Sans", sans-serif;
-  font-weight: 800;
-  background-color: #F5F5ED;
-}
-
-
-header::after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-.navbar p {
-  float: left;
-  color: #1A5F16;
-  font-size: 20px;
-  margin-left: 30px;
-}
-
-nav {
-  float: right;
-}
-
-nav ul {
-  list-style: none;
-}
-
-nav li {
-  display: inline-block;
-  margin: 0 40px;
-  margin-top: -16px;
-  padding-top: 18px;
-  position: relative;
-}
-
-nav a {
-  color: black;
-  text-decoration: none;
-  text-transform: uppercase;
-  font-size: 16px;
-}
-
-nav a:hover {
-  color: black;
-}
-
-nav a::before {
-  content: "";
-  display: block;
-  height: 5px;
-  background-color: black;
+.logo{
+  width:100px;
+  margin-left:70px;
+  margin-top: -10px;
   position: absolute;
-  top: 0;
-  width: 0%;
-  transition: all ease-in-out 250ms;
+  color: #1A5F16;
+  display: block;
 }
 
-nav a:hover::before {
-  width: 100%;
+.logo h2{
+  font-size:32px;
+  font-family: 'Helvetica Neue', sans-serif;
 }
 
-nav button {
-  border: none;
-  border-radius: 5px;
-  padding: 8px 15px;
-  margin: -5px 15px 0px 15px;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  display: inline-block;
-  position: relative;
-  cursor: pointer;
+/* Add a black background color to the top navigation */
+.topnav {
+padding:20px;
+overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+float: right;
+display: block;
+color: black;
+text-align: center;
+padding: 8px 30px;
+text-decoration: none;
+font-size: 14px;
+font-family: 'Helvetica Neue', sans-serif;
+letter-spacing: 0.5px;
+background: none;
+}
+
+.topnav a:hover{
+border-bottom: 2px solid #1A5F16;
+color:#1A5F16;
+}
+
+/* Hide the link that should open and close the topnav on small screens */
+.topnav .icon {
+display: none;
 }
 
 /* HOMEPAGE CAROUSEL CSS */
