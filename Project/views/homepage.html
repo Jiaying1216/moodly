@@ -7,18 +7,21 @@
 
 <body>
     <header>
-        <div class="navbar">
-          <p>Mood.ly</p>
-          <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/mood_tracker">Mood Tracker</a></li>
-                <li><a href="/journal">Journal</a></li>
-                <li><a href="/forum">Forum</a></li>
-                <li><a href="/tips">Tips</a></li>
-                <li><a href="/profile">Profile</a></li>
-            </ul>
-          </nav>
+        <a href="/homepage">
+            <div class="logo" id="myLogo">
+                <h2>Mood.ly</h2>   
+            </div> 
+        </a>
+
+        <div class="topnav" id="myTopnav">
+            <a href="/profile">Profile</a>
+            <a href="/tips">Tips</a>
+            <a href="forum">Forum</a>
+            <a href="journal">Journal</a>
+            <a href="mood_tracker" class="active">Mood Tracker</a>
+            <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                <i class="fa fa-bars"></i>
+            </a>
         </div>
     </header>
  
