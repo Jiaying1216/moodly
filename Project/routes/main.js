@@ -18,7 +18,7 @@ module.exports = function (app) {
 
   var tipsRef = firebaseRef.child("tips");
 
-  app.get("/", function (req, res) {
+  app.get("/homepage", function (req, res) {
     var forumListRef = forumRef;
     var forumList = [];
     
