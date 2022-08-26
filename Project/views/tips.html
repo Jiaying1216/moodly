@@ -8,42 +8,25 @@
 
     </head>
     <body>
-        <!-- navbar -->
-        <nav class="navbar navbar-expand-md navbar-light sticky-top bg-white">
-            <div class="container-xxl">
-                <a href="/homepage" class="navbar-brand">
-                    <span class="fw-bold">Mood.ly</span>
+                <header>
+            <a href="/homepage">
+                <div class="logo" id="myLogo">
+                    <h2>Mood.ly</h2>   
+                </div> 
+            </a>
+            
+            <div class="topnav" id="myTopnav">
+                <a href="/profile">Profile</a>
+                <a href="/tips">Tips</a>
+                <a href="forum">Forum</a>
+                <a href="journal">Journal</a>
+                <a href="mood_tracker" class="active">Mood Tracker</a>
+                <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                    <i class="fa fa-bars"></i>
                 </a>
-               
-                <!-- toggle button for mobile nav -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <!-- navbar links -->
-                <div class="topnav">
-                    <div class="collapse navbar-collapse justify-content-end align-center" id="main-nav">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a href="/mood_tracker" class="nav-link">Mood Tracker</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/journal" class="nav-link">Journal</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/forum_mainpage" class="nav-link">Forum</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/tips" class="nav-link">Tips</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="/profile" class="nav-link">Profile</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
             </div>
-        </nav>
+         </header>
+        
         <!-- intro -->
         <section id="intro">
              <div class="container-lg">
@@ -51,8 +34,7 @@
                     <!-- intro text -->
                     <div class="col-md-4 text-center text-md-start">
                         <h1>
-                            <div class="display-2">Tips</div>
-                            <div class="display-5 text-muted">To Help Improve Your Mental Health</div>
+                            <div class="font-weight-bold">Tips</div>
                             <p class="lead my-4 text-muted">Maintaining your mental health is important so here are some tips to get you started</p>
                         </h1>
                     </div>
