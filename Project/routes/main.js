@@ -4,6 +4,7 @@ module.exports = function (app) {
   var firebaseRef = db.ref("main");
   
   var timeAgo = require('node-time-ago');
+  const cookieParser = require("cookie-parser");
   
   var usersRef = firebaseRef.child("users");
   var journalRef = firebaseRef.child("journal");
@@ -12,11 +13,12 @@ module.exports = function (app) {
   var moodRef = firebaseRef.child("mood_tracker");
   var forumRef = firebaseRef.child("forum");
   var signUpRef = firebaseRef.child("sign-up");
+  var tipsRef = firebaseRef.child("tips");
 
   var DateUtil = require("./util/dateUtil.js");
   var dateUtil = new DateUtil();
 
-  var tipsRef = firebaseRef.child("tips");
+  app.use(cookieParser());
 
   app.get("/homepage", function (req, res) {
     var forumListRef = forumRef;
@@ -155,10 +157,6 @@ module.exports = function (app) {
       res.render("welcomepage.html")
     });
 
-    app.get("/homepage", function (req, res) {
-      res.render("homepage.html")
-    });
-
     app.get("/journal", function (req, res) {
       res.render("journal.html");
     });
@@ -213,29 +211,7 @@ module.exports = function (app) {
       res.cookie("XSRF-TOKEN");
       next();
     });
-    
-    app.get("/profile", function (req, res) {
-      const sessionCookie = req.cookies.session || "";
-    
-      admin
-        .auth()
-        .verifySessionCookie(sessionCookie, true /** checkRevoked */)
-        .then((userData) => {
-          req.cookies.userID = userData.uid;
-          console.log("uid: " + userData.uid);
-          console.log("Test: " + req.cookies.userID);
-          console.log("Logged in:", userData.email);
-          res.render("profile.html");
-        })
-        .catch((error) => {
-          res.redirect("/signIn");
-        });
-    });
-    
-    app.get("/", function (req, res) {
-      res.render("index.html");
-    });
-    
+      
     app.post("/sessionLogin", (req, res,next) => {
       const idToken = req.body.idToken.toString();
     
@@ -278,44 +254,55 @@ module.exports = function (app) {
   
   
   app.get("/profile", function (req, res) {
-    var userID = "OWxdOwor1YMJWlzdnFbF6V1O9FF3";
+    const sessionCookie = req.cookies.session || "";
 
-    signUpRef.get().then((snapshot) => {
-      if(snapshot.exists()) {
-        let signUpObj = JSON.parse(JSON.stringify(snapshot.val()));
-        var IDvariable;
+    admin
+      .auth()
+      .verifySessionCookie(sessionCookie, true /** checkRevoked */)
+      .then((userData) => {
+        var userID = userData.uid;
+        req.cookies.userID = userData.uid;
+        console.log("uid: " + userData.uid);
+        console.log("Test: " + req.cookies.userID);
+        console.log("Logged in:", userData.email);
 
-        for(let profileID in signUpObj) {
-          if(signUpObj[profileID].userID === userID) {
-            IDvariable = profileID;
-
-            var name = signUpObj[profileID].name;
-            var email = signUpObj[profileID].email;
-            var username = signUpObj[profileID].username;
-            var password = signUpObj[profileID].password;
-            var educational_level = signUpObj[profileID].educational_level;
-            var gender = signUpObj[profileID].gender;
-            var phone_number = signUpObj[profileID].phone_number;
-            var school = signUpObj[profileID].school;
-
-            res.render("profile.html", {
-              userFullName: name,
-              userEmail: email,
-              userUsername: username,
-              userPassword: password,
-              userEducationalLevel: educational_level,
-              userGender: gender,
-              userPhoneNumber: phone_number,
-              userSchool: school
-            });
-          } else {
-            console.log("No users available");
-          }  
-        }
-      }
-    }).catch((error) => {
-      console.error(error);
-    });
+        signUpRef.get().then((snapshot) => {
+          if(snapshot.exists()) {
+            let signUpObj = JSON.parse(JSON.stringify(snapshot.val()));
+            var IDvariable;
+    
+            for(let profileID in signUpObj) {
+              if(signUpObj[profileID].userID === userID) {
+                IDvariable = profileID;
+    
+                var name = signUpObj[profileID].name;
+                var email = signUpObj[profileID].email;
+                var username = signUpObj[profileID].username;
+                var password = signUpObj[profileID].password;
+                var educational_level = signUpObj[profileID].educational_level;
+                var gender = signUpObj[profileID].gender;
+                var phone_number = signUpObj[profileID].phone_number;
+                var school = signUpObj[profileID].school;
+    
+                res.render("profile.html", {
+                  userFullName: name,
+                  userEmail: email,
+                  userUsername: username,
+                  userPassword: password,
+                  userEducationalLevel: educational_level,
+                  userGender: gender,
+                  userPhoneNumber: phone_number,
+                  userSchool: school
+                });
+              } else {
+                console.log("No users available");
+              }  
+            }
+          }
+        }).catch((error) => {
+          console.error(error);
+        });
+      })
   });
   
   app.get("/topNav", function (req, res) {
