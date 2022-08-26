@@ -159,10 +159,6 @@ module.exports = function (app) {
       res.render("homepage.html")
     });
 
-    app.get("/mood_tracker", function (req, res) {
-      res.render("mood_tracker.html")
-    });
-
     app.get("/journal", function (req, res) {
       res.render("journal.html");
     });
