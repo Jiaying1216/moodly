@@ -18,6 +18,8 @@ module.exports = function (app) {
   var DateUtil = require("./util/dateUtil.js");
   var dateUtil = new DateUtil();
 
+  var userID;
+
   app.use(cookieParser());
 
   app.get("/homepage", function (req, res) {
@@ -34,7 +36,7 @@ module.exports = function (app) {
   });
 
   app.get("/journal", function (req, res) {
-    var userID = 0;
+
     // variable to check if user has entered their daily journal
     var isDailyEntryDone = false;
     // variable containing the date of the latest journal
@@ -85,11 +87,11 @@ module.exports = function (app) {
       })
       .catch((error) => {
         console.error(error);
+        res.redirect("/");
       });
   });
 
   app.post("/addjournalentry", function (req, res) {
-    var userID = 0;
 
     journalRef
       .child(userID)
@@ -113,7 +115,6 @@ module.exports = function (app) {
   });
 
   app.post("/editjournalentry", function (req, res) {
-    var userID = 0;
 
     journalRef
       .child(userID)
@@ -232,6 +233,7 @@ module.exports = function (app) {
     });
     
     app.get("/sessionLogout", (req, res) => {
+      userID = 0;
       res.clearCookie("session");
       res.redirect("/signIn");
     });
@@ -260,7 +262,7 @@ module.exports = function (app) {
       .auth()
       .verifySessionCookie(sessionCookie, true /** checkRevoked */)
       .then((userData) => {
-        var userID = userData.uid;
+        userID = userData.uid;
         req.cookies.userID = userData.uid;
         console.log("uid: " + userData.uid);
         console.log("Test: " + req.cookies.userID);
@@ -498,7 +500,7 @@ module.exports = function (app) {
     //insert happy mood
     app.get("/happy", function (req, res) {
       console.log("mood = happy")
-      username = "user 1";
+      username = userID;
       mood = "happy";
       
       currentTime = new Date();
@@ -534,7 +536,7 @@ module.exports = function (app) {
     //insert mad mood
     app.get("/mad", function (req, res) {
       console.log("mood = mad")
-      username = "user 1";
+      username = userID;
       mood = "mad";
     
       currentTime = new Date();
@@ -570,7 +572,7 @@ module.exports = function (app) {
     //insert sad mood   
     app.get("/sad", function (req, res) {
       console.log("mood = sad")
-      username = "user 1";
+      username = userID;
       mood = "sad";
       
       currentTime = new Date();
@@ -606,7 +608,7 @@ module.exports = function (app) {
     //insert cool mood 
     app.get("/cool", function (req, res) {
       console.log("mood = cool")
-      username = "user 1";
+      username = userID;
       mood = "cool";
       
       currentTime = new Date();
@@ -643,7 +645,7 @@ module.exports = function (app) {
     //route to mood_tracker || insert neutral moods to display on the html calendar
     app.get("/neutral", function (req, res) {
       console.log("mood = neutral")
-      username = "user 1";
+      username = userID;
       mood = "neutral";
       
       currentTime = new Date();
@@ -679,53 +681,16 @@ module.exports = function (app) {
 
     //insert getting mood 
     app.get("/mood_tracker", function (req, res) {
-      username = "user 1";     
+      //username = "user 1";
+      username = userID;
       currentTime = new Date();
       let date = ("0" + currentTime.getDate()).slice(-2);
       let month = ("0" + (currentTime.getMonth() + 1)).slice(-2);
       let year = currentTime.getFullYear(); 
       let currentDate = date + + month + year;
 
-      /* var userMood = moodRef.child(username).child(currentDate).child("today_mood");
-      userMood.once('value') 
-      .then((querySnapshot) => {
-        //querySnapshot.exists(); -- when query is empty -- false || when query is not empty -- true
-        var a = querySnapshot.exists();
-        console.log(a);
-
-          if (a == true) {
-            
-            userMood.once('value')
-              .then((querySnapshot) => {
-                if (!querySnapshot.numChildren()) {
-                  var today_mood = "empty";
-                }
-                if (!querySnapshot.exists()) {
-                  var today_mood = "empty";
-                }
-                var today_mood = querySnapshot.val().mood;
-                console.log("mood today is " + today_mood);
-
-                // retrieve all user 
-
-                res.render("mood_tracker.html", {
-                  title: "Dynamic title",
-                  today_mood : today_mood
-                });
-              });
-          } else if (a == false) {
-            var today_mood = "empty";
-                console.log("mood today is " + today_mood);  
-
-                res.render("mood_tracker.html", {
-                  title: "Dynamic title", today_mood : today_mood
-                });
-          } else {
-            console.log("error adding mood")
-          }
-      }); */
-
       var today_mood = "empty";
+      var prev_moods = {};
 
       moodRef.child(username).get().then((snapshot) => {
         if(snapshot.exists()) {
@@ -733,7 +698,7 @@ module.exports = function (app) {
           let moodDataObj = JSON.stringify(snapshot.val());
           moodDataObj = JSON.parse(moodDataObj);
 
-          var prev_moods = {};
+          
 
           for(let i in moodDataObj) {
             
@@ -754,8 +719,12 @@ module.exports = function (app) {
 
         }
         else {
-          console.log("no data available");
-          res.redirect("/");
+          console.log("No data available");
+          res.render("mood_tracker.html", {
+            title: "Dynamic title", 
+            today_mood : today_mood,
+            prev_moods : prev_moods
+          });
         }
       })
       .catch((error) => {
