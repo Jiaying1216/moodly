@@ -53,3 +53,68 @@ body {
 h1 {
     color: #DF9527
 }
+
+.card{
+  height: auto;
+}
+
+.tipsImage{
+  height: 200px;
+  width: -webkit-fill-available;
+}
+
+.col-md-2{
+  align-self: center;
+}
+
+@media (max-width: 755px) {
+  .container {
+    max-width: 540px;
+  }
+
+  .iconBG {
+    border-radius: 10px 10px 0px 0px;
+    text-align: -webkit-center;
+  }
+
+  .card {
+    font-size: 16px;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 15px;
+  }
+
+  .tipsImage {
+    height: 200px;
+    width: -webkit-fill-available;
+  }
+  .carousel-inner,
+  .carousel-item {
+    height: 200px;
+  }
+
+  .icon {
+    font-size: 80px;
+  }
+
+  .card-title {
+    font-size: 17px;
+  }
+
+  .col-md-6 {
+    padding: 0;
+  }
+
+  .row {
+    --bs-gutter-x: 0;
+  }
+
+  .col-md-2{
+    align-self: end;
+    text-align: end;
+  }
+
+  .btn{
+    text-align: end;
+  }
+}

@@ -5,6 +5,8 @@
     --left-color: #9fdeaf;
     /*  Light Blue  */
     --right-color: #96dbe2;
+      --font-family-sans-serif: Open Sans, sans-serif;
+    --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
   
   
@@ -120,6 +122,19 @@ img{
   background-color: #e8c0c0;
 }
 
+#sign-up-form select {
+  padding: 10px;
+  width: 100%;
+  font-size: 17px;
+  font-family: Raleway;
+  border: 1px solid #aaaaaa;
+}
+
+/* Mark input boxes that gets an error on validation: */
+#sign-up-form select.invalid {
+  background-color: #e8c0c0;
+}
+
 /* Make circles that indicate the steps of the form: */
 .step {
   height: 10px;
@@ -149,7 +164,7 @@ button {
   border: none;
   padding: 10px 18px;
   font-size: 14px;
-  font-family: Raleway;
+  /* font-family: Raleway; */
   cursor: pointer;
 }
 
@@ -185,6 +200,7 @@ button:hover {
     border-radius: 10px;
     color: black;
     clip: rect(0, 385px, var(--form-height), 0);
+    
   }
   
 
@@ -522,3 +538,5 @@ button:hover {
       text-align: right;
     }
   }
+
+ 

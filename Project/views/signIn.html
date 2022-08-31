@@ -18,14 +18,14 @@
 </a>
 
 <div class="topnav" id="myTopnav">
-  <a href="/profile">Profile</a>
+  <!-- <a href="/profile">Profile</a>
   <a href="/tips">Tips</a>
   <a href="forum_mainpage">Forum</a>
   <a href="journal">Journal</a>
   <a href="mood_tracker" class="active">Mood Tracker</a>
   <a href="javascript:void(0);" class="icon" onclick="myFunction()">
     <i class="fa fa-bars"></i>
-  </a>
+  </a> -->
 </div>
 
     
@@ -60,7 +60,7 @@
 
    
 
-    <div class="sign-up" id="sign-up-info">
+    <div class="sign-up" id="sign-up-info" >
       <form id="sign-up-form" action="/sign_up" method="POST">
 
         <div class="sign_up_details" class="first_step">
@@ -79,10 +79,12 @@
         <div class="sign_up_details" id="second_step">
           <input type="text" placeholder="Username" id="user_name" name="user_name" oninput="this.className = ''"/>
           <input type="date" placeholder="Birthday" id="birthday" name="birthday" oninput="this.className = ''"/>
-          <input type="radio" id="gender_male" name="gender" value="male" oninput="this.className = ''">
+          <input type="number" placeholder="Your Age" name="age" min="5" max="30" oninput="this.className = ''">
+     <!--   
+          <input type="radio" id="gender_male" name="gender" value="male" oninput="this.className = ''">
           <label for="male">male</label>
           <input type="radio" id="gender_female" name="gender" value="female" oninput="this.className = ''">
-          <label for="female">female</label>
+          <label for="female">female</label> -->
     
           <input type="tel" placeholder="Phone Number (Optional)" id="phone_number" name="phone_number" oninput="this.className = ''"/>
           <small></small>
@@ -91,13 +93,15 @@
         </div>        
 
         <div style="overflow:auto;">
-          <div style="float:right;">
-            <button type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
-            <button type="button" id="nextBtn" onclick="nextPrev(1)">Next</button>
-          </div>
+         
+            <div style="float:center; display: flex;">
+              <button class="control-button in" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
+              <button class="control-button in" type="button" id="nextBtn" onclick="nextPrev(1)">Next</button>
+            </div>
+          
         </div>
 
-        <div style="text-align:center;margin-top:40px;">
+        <div style="text-align:center;margin-top:20px;">
           <span class="step"></span>
           <span class="step"></span>
         </div>

@@ -56,16 +56,10 @@ h1 {
 }
   
 .journal-container {
-    text-decoration: none;
-    border: none;
-    padding: 12px 40px;
-    font-size: 16px;
-    background-color: white;
-    border-radius: 5px;
-    box-shadow: 7px 6px 28px 1px rgba(0, 0, 0, 0.24);
-    cursor: pointer;
-    outline: none;
-    transition: 0.2s all;
+  max-height: 300px;
+  margin: 10px auto;
+  box-shadow: 0px 2px 7px 0px rgba(0, 0, 0, 0.164);
+  background-color: white;
 }
   
 .journal-container:hover {
@@ -74,4 +68,71 @@ h1 {
     box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24);
     /* Lowering the shadow */
 }
+
+.row-3{
+  display: grid; 
+  grid-template-columns:repeat(3,1fr); 
+  grid-column-gap:10px; 
+  padding-left: 30px;
+  padding-right: 30px;
+
+}
+
+.jounralBtn{
+  margin-right: 20px;
+}
   
+.wrap-content{
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+}
+
+.modal-header{
+  background-color: #F5F5ED;
+}
+
+.modal-footer{
+  background-color: #F5F5ED;
+}
+
+.noDataToday{
+  text-align: center;
+}
+
+.input-group {
+  /* padding-right: 35px; */
+  justify-content: right;
+}
+
+@media (max-width: 755px) {
+  .container {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .journal-container{
+  }
+  
+  .row{
+    padding-left: 0;
+  }
+
+  .grid{
+    padding-left: 30px;
+  }
+
+  .input-group{
+    flex-flow: nowrap;
+  }
+
+  .row-3 {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-column-gap: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+
+  }
+}

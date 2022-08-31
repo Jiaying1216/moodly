@@ -18,6 +18,8 @@ module.exports = function (app) {
   var DateUtil = require("./util/dateUtil.js");
   var dateUtil = new DateUtil();
 
+  var userID;
+
   app.use(cookieParser());
 
   app.get("/homepage", function (req, res) {
@@ -34,7 +36,7 @@ module.exports = function (app) {
   });
 
   app.get("/journal", function (req, res) {
-    var userID = 0;
+
     // variable to check if user has entered their daily journal
     var isDailyEntryDone = false;
     // variable containing the date of the latest journal
@@ -85,11 +87,11 @@ module.exports = function (app) {
       })
       .catch((error) => {
         console.error(error);
+        res.redirect("/");
       });
   });
 
   app.post("/addjournalentry", function (req, res) {
-    var userID = 0;
 
     journalRef
       .child(userID)
@@ -113,7 +115,6 @@ module.exports = function (app) {
   });
 
   app.post("/editjournalentry", function (req, res) {
-    var userID = 0;
 
     journalRef
       .child(userID)
@@ -181,18 +182,20 @@ module.exports = function (app) {
           })
           .then((userData) => {
             
-           signUpRef.push().set({
+            signUpRef.child(userData.uid).set({
               "userID": userData.uid,
               "name" : req.body.name,
               "email" : req.body.email,
-              "password" : req.body.password,
+              // "password" : req.body.password,
               "username" : req.body.user_name,
               "birthday" : req.body.birthday,
-              "gender" : req.body.gender,
+              "age" : req.body.age,
               "phone_number" : req.body.phone_number,
               "educational_level" : req.body.educational_level,
-              "school" : req.body.school
-             
+              "school": req.body.school,
+              "numOfForum": 0,
+              "numOfcomments": 0,
+              "dateJoined": new Date()
           });
           res.render("signIn.html");
         })
@@ -232,8 +235,9 @@ module.exports = function (app) {
     });
     
     app.get("/sessionLogout", (req, res) => {
+      userID = 0;
       res.clearCookie("session");
-      res.redirect("/signIn");
+      res.redirect("/");
     });
   /////////////////////////////////////////////////////// TIPS ///////////////////////////////////////////////////////////////////////////
   app.get("/tips", function (req, res) {
@@ -260,49 +264,47 @@ module.exports = function (app) {
       .auth()
       .verifySessionCookie(sessionCookie, true /** checkRevoked */)
       .then((userData) => {
-        var userID = userData.uid;
+        userID = userData.uid;
         req.cookies.userID = userData.uid;
         console.log("uid: " + userData.uid);
         console.log("Test: " + req.cookies.userID);
         console.log("Logged in:", userData.email);
+        // test
+        thisUserRef = signUpRef.child(userID);
+        thisUser = [];
+        // console.log("profile::" + thisUser);
+        thisUserRef.once('value')
+          .then((querySnapshot) => {
+              if (!querySnapshot.numChildren()) { 
+                        throw new Error('expected at least one result');
+              }
+              
+              if (!querySnapshot.exists()) { 
+                throw new Error(`Entry ${userID} not found.`);
+              }
+            
+            var username = querySnapshot.val().name;
+            var email = querySnapshot.val().email;
+            var name = querySnapshot.val().username;
+            var educational_level = querySnapshot.val().educational_level;
+            var age = querySnapshot.val().age;
+            var phone_number = querySnapshot.val().phone_number;
+            var school = querySnapshot.val().school;
 
-        signUpRef.get().then((snapshot) => {
-          if(snapshot.exists()) {
-            let signUpObj = JSON.parse(JSON.stringify(snapshot.val()));
-            var IDvariable;
-    
-            for(let profileID in signUpObj) {
-              if(signUpObj[profileID].userID === userID) {
-                IDvariable = profileID;
-    
-                var name = signUpObj[profileID].name;
-                var email = signUpObj[profileID].email;
-                var username = signUpObj[profileID].username;
-                var password = signUpObj[profileID].password;
-                var educational_level = signUpObj[profileID].educational_level;
-                var gender = signUpObj[profileID].gender;
-                var phone_number = signUpObj[profileID].phone_number;
-                var school = signUpObj[profileID].school;
-    
-                res.render("profile.html", {
-                  userFullName: name,
-                  userEmail: email,
-                  userUsername: username,
-                  userPassword: password,
-                  userEducationalLevel: educational_level,
-                  userGender: gender,
-                  userPhoneNumber: phone_number,
-                  userSchool: school
-                });
-              } else {
-                console.log("No users available");
-              }  
-            }
-          }
+            res.render("profile.html", {
+                    userFullName: username,
+                    userEmail: email,
+                    userUsername: name,
+                    userEducationalLevel: educational_level,
+                    age: age,
+                    userPhoneNumber: phone_number,
+                    userSchool: school
+                  });
+          
         }).catch((error) => {
-          console.error(error);
+            console.error(error);
         });
-      })
+      });
   });
   
   app.get("/topNav", function (req, res) {
@@ -321,82 +323,58 @@ module.exports = function (app) {
   app.get("/eachForum", function (req, res) {
     var forumId = req.query.forumId;
     var forumDataRef = forumRef;
-
-    forumDataRef.child(forumId).once('value')
-      .then((querySnapshot) => {
-        if (!querySnapshot.numChildren()) { 
-          throw new Error('expected at least one result');
-        }
-        
-        if (!querySnapshot.exists()) { 
-          throw new Error(`Entry ${forumId} not found.`);
-        }
-
-        var forumTitle = querySnapshot.val().forumTitle;
-        var currentTime = querySnapshot.val().currentTime;
-        var numOfLikes = querySnapshot.val().numOfLikes;
-        var numOfReplies = querySnapshot.val().numOfReplies;
-        var numOfViews = querySnapshot.val().numOfViews;                         
-        var forumContent = querySnapshot.val().forumContent;
-        var uploader = querySnapshot.val().username;
-       
-        let timePast = timeAgo(currentTime);
    
-        var viewCount = numOfViews;
-        updatedViewCount = viewCount + 1;
-        var ref = forumRef.child(forumId);
-         
-        ref.update({
-            numOfViews: updatedViewCount   
-        });
+            forumDataRef.child(forumId).once('value')
+              .then((querySnapshot) => {
+                if (!querySnapshot.numChildren()) {
+                  throw new Error('expected at least one result');
+                }
+                    
+                if (!querySnapshot.exists()) {
+                  throw new Error(`Entry ${forumId} not found.`);
+                }
 
-        var repliesRef = forumRef.child(forumId).child("forumReplies");
-        var replyPost = repliesRef;
-        var forum_replies = [];
-        
+                var forumTitle = querySnapshot.val().forumTitle;
+                var currentTime = querySnapshot.val().currentTime;
+                var numOfLikes = querySnapshot.val().numOfLikes;
+                var numOfReplies = querySnapshot.val().numOfReplies;
+                var numOfViews = querySnapshot.val().numOfViews;
+                var forumContent = querySnapshot.val().forumContent;
+                var uploader = querySnapshot.val().username;
+              
+                let timePast = timeAgo(currentTime);
+              
+                var viewCount = numOfViews;
+                updatedViewCount = viewCount + 1;
+                var ref = forumRef.child(forumId);
+                    
+                ref.update({
+                  numOfViews: updatedViewCount
+                });
 
-        replyPost.on('value', (data) => {
-          data.forEach(function (snapshot) {
-            forum_replies.push(snapshot.val());
-          })
-        });
-        console.log(replyPost);
-        res.render("eachForum.html", {replyPosts: forum_replies, forumId: forumId, forumTitle:forumTitle, uploader: uploader, currentTime:timePast, numOfLikes:numOfLikes,numOfReplies:numOfReplies,forumContent:forumContent, numOfViews: numOfViews});
-      })
-      .catch((error) => {
-        console.log("Unexpected error:", error);
-      })
+                var repliesRef = forumRef.child(forumId).child("forumReplies");
+                var replyPost = repliesRef;
+                var forum_replies = [];
+                    
+
+                replyPost.on('value', (data) => {
+                  data.forEach(function (snapshot) {
+                    forum_replies.push(snapshot.val());
+                  })
+                });
+                console.log(replyPost);
+                res.render("eachForum.html", { replyPosts: forum_replies, forumId: forumId, forumTitle: forumTitle, uploader: uploader, currentTime: currentTime, numOfLikes: numOfLikes, numOfReplies: numOfReplies, forumContent: forumContent, numOfViews: numOfViews });
+              })
+              .catch((error) => {
+                console.log("Unexpected error:", error);
+              })
+
 
   });
 
-  //ADD REPLY TO FIREBASE
-  app.post("/addReply", function (req, res) {
-    username = "user 1";
+  app.post("/addLikeForum", function (req, res) {
     forumId = req.body.forumId;
-    reply = req.body.userReply;
-    let currentTime = new Date();
-    let timePast = timeAgo(currentTime);
-
-      
-    var ref = forumRef.child(forumId).child("forumReplies"); 
-    var newforumList = ref.push();
-    newforumList.set({ 
-      forumReplyId: newforumList.key,
-      username: "user 1",
-      reply: reply,
-      currentTime: timePast
-    });
-
-    var forumListRef = ref;
-    var forum_replies = [];
-    
-
-    forumListRef.on('value', (data) => { 
-      data.forEach(function (snapshot) {
-        forum_replies.push(snapshot.val());
-      })
-    });
-
+    console.log("like" + forumId);
     var forumDataRef = forumRef;
     forumDataRef.child(forumId).once('value')
       .then((querySnapshot) => {
@@ -406,22 +384,109 @@ module.exports = function (app) {
         if (!querySnapshot.exists()) { // value may be null, meaning idToFind doesn't exist
           throw new Error(`Entry ${forumId} not found.`);
         }
-        var numOfReplies = querySnapshot.val().numOfReplies;
-   
-        var repliesCount = numOfReplies;
-        updated_replies_count = repliesCount + 1;
-        var forum_post_ref = forumRef.child(forumId);
-         
-        forum_post_ref.update({
-            numOfReplies:  updated_replies_count   
+
+        var numOfLikes = querySnapshot.val().numOfLikes;
+        var forumLikes = numOfLikes + 1;
+
+    
+        forumRef.child(forumId).update({
+              
+          numOfLikes: forumLikes,
+              
         });
 
+        // thisUserRef.child("userForum").update({
+        //   numOfLikes: forumLikes,
+        // });
+          
         res.redirect('back');
-      })
+      }).catch((error) => {
+        console.error(error);
+      });
   });
 
+  
+
+  //ADD REPLY TO FIREBASE
+  app.post("/addReply", function (req, res) {
+    const sessionCookie = req.cookies.session || "";
+
+    username = "user 1";
+    forumId = req.body.forumId;
+    reply = req.body.userReply;
+    let currentTime = new Date();
+
+    admin
+      .auth()
+      .verifySessionCookie(sessionCookie, true /** checkRevoked */)
+      .then((userData) => {
+        userID = userData.uid;
+        req.cookies.userID = userData.uid;
+        console.log("uid: " + userData.uid);
+        console.log("Test: " + req.cookies.userID);
+        console.log("Logged in:", userData.email);
+        // test
+        thisUserRef = signUpRef.child(userID);
+        thisUser = [];
+        // console.log("profile::" + thisUser);
+        thisUserRef.once('value')
+          .then((querySnapshot) => {
+              if (!querySnapshot.numChildren()) { 
+                        throw new Error('expected at least one result');
+              }
+              
+              if (!querySnapshot.exists()) { 
+                throw new Error(`Entry ${userID} not found.`);
+              }
+            var username = querySnapshot.val().name;
+
+      
+            var ref = forumRef.child(forumId).child("forumReplies"); 
+            var newforumList = ref.push();
+            newforumList.set({ 
+              forumReplyId: newforumList.key,
+              username: username,
+              reply: reply,
+              currentTime: currentTime
+            });
+
+            var forumListRef = ref;
+            var forum_replies = [];
+            
+
+            forumListRef.on('value', (data) => { 
+              data.forEach(function (snapshot) {
+                forum_replies.push(snapshot.val());
+              })
+            });
+
+            var forumDataRef = forumRef;
+            forumDataRef.child(forumId).once('value')
+              .then((querySnapshot) => {
+                if (!querySnapshot.numChildren()) { // handle rare no-results case
+                  throw new Error('expected at least one result');
+                }
+                if (!querySnapshot.exists()) { // value may be null, meaning idToFind doesn't exist
+                  throw new Error(`Entry ${forumId} not found.`);
+                }
+                var numOfReplies = querySnapshot.val().numOfReplies;
+          
+                var repliesCount = numOfReplies;
+                updated_replies_count = repliesCount + 1;
+                var forum_post_ref = forumRef.child(forumId);
+                
+                forum_post_ref.update({
+                    numOfReplies:  updated_replies_count   
+                });
+
+                res.redirect('back');
+              })
+          });
+      });
+    });
+
     //ROUTE DIRECT TO FORUM MAIN PAGE ||GET ALL DATA FROM DB TO DISPLAY
-    app.get("/forum_mainpage", function (req, res) {
+  app.get("/forum_mainpage", function (req, res) {
       var forumListRef = forumRef;
       var forumList = [];
 
@@ -437,27 +502,71 @@ module.exports = function (app) {
     });
 
     //ADD FORUM ITEMS INTO FIREBASE
-    app.post("/addForumItem", function (req, res) {
-      username = "user 1";
-      forumTitle = req.body.forum_name;
-      forumContent = req.body.forum_content;
-      numOfLikes = 0;
-      numOfViews = 0;
-      numOfReplies = 0;
-      currentTime = new Date();
-      var newforumList = forumRef.push();
-      newforumList.set({ 
-        forumId: newforumList.key,
-        username: "user 1",
-        forumTitle: req.body.forum_name,
-        forumContent: req.body.forum_content,
-        numOfLikes: 0,
-        numOfViews: 0,
-        numOfReplies: 0,
-        currentTime: Date()
-      });
-      console.log(newforumList.key)
+  app.post("/addForumItem", function (req, res) {
+    const sessionCookie = req.cookies.session || "";
 
+    admin
+      .auth()
+      .verifySessionCookie(sessionCookie, true /** checkRevoked */)
+      .then((userData) => {
+        userID = userData.uid;
+        req.cookies.userID = userData.uid;
+        console.log("uid: " + userData.uid);
+        console.log("Test: " + req.cookies.userID);
+        console.log("Logged in:", userData.email);
+        // test
+        thisUserRef = signUpRef.child(userID);
+        thisUser = [];
+        // console.log("profile::" + thisUser);
+        thisUserRef.once('value')
+          .then((querySnapshot) => {
+              if (!querySnapshot.numChildren()) { 
+                        throw new Error('expected at least one result');
+              }
+              
+              if (!querySnapshot.exists()) { 
+                throw new Error(`Entry ${userID} not found.`);
+              }
+            
+            var username = querySnapshot.val().name;
+            var numOfForum = querySnapshot.val().numOfForum;
+
+            var newforumList = forumRef.push();
+            newforumList.set({ 
+              forumId: newforumList.key,
+              username: username,
+              forumTitle: req.body.forum_name,
+              forumContent: req.body.forum_content,
+              numOfLikes: 0,
+              numOfViews: 0,
+              numOfReplies: 0,
+              currentTime: new Date()
+            });
+
+            var numForum = numOfForum + 1;
+
+            thisUserRef.update({ 
+              numOfForum: numForum
+            });
+
+            thisUserRef.child("userForum").push().set({ 
+              
+                forumId: newforumList.key,
+                username: username,
+                forumTitle: req.body.forum_name,
+                forumContent: req.body.forum_content,
+                numOfLikes: 0,
+                numOfViews: 0,
+                numOfReplies: 0,
+                currentTime: new Date()
+              
+            });
+
+        }).catch((error) => {
+            console.error(error);
+        });
+      });
+    
       var forumListRef = forumRef;
       var forumList = [];
 
@@ -498,7 +607,7 @@ module.exports = function (app) {
     //insert happy mood
     app.get("/happy", function (req, res) {
       console.log("mood = happy")
-      username = "user 1";
+      username = userID;
       mood = "happy";
       
       currentTime = new Date();
@@ -534,7 +643,7 @@ module.exports = function (app) {
     //insert mad mood
     app.get("/mad", function (req, res) {
       console.log("mood = mad")
-      username = "user 1";
+      username = userID;
       mood = "mad";
     
       currentTime = new Date();
@@ -570,7 +679,7 @@ module.exports = function (app) {
     //insert sad mood   
     app.get("/sad", function (req, res) {
       console.log("mood = sad")
-      username = "user 1";
+      username = userID;
       mood = "sad";
       
       currentTime = new Date();
@@ -606,7 +715,7 @@ module.exports = function (app) {
     //insert cool mood 
     app.get("/cool", function (req, res) {
       console.log("mood = cool")
-      username = "user 1";
+      username = userID;
       mood = "cool";
       
       currentTime = new Date();
@@ -643,7 +752,7 @@ module.exports = function (app) {
     //route to mood_tracker || insert neutral moods to display on the html calendar
     app.get("/neutral", function (req, res) {
       console.log("mood = neutral")
-      username = "user 1";
+      username = userID;
       mood = "neutral";
       
       currentTime = new Date();
@@ -679,53 +788,16 @@ module.exports = function (app) {
 
     //insert getting mood 
     app.get("/mood_tracker", function (req, res) {
-      username = "user 1";     
+      //username = "user 1";
+      username = userID;
       currentTime = new Date();
       let date = ("0" + currentTime.getDate()).slice(-2);
       let month = ("0" + (currentTime.getMonth() + 1)).slice(-2);
       let year = currentTime.getFullYear(); 
       let currentDate = date + + month + year;
 
-      /* var userMood = moodRef.child(username).child(currentDate).child("today_mood");
-      userMood.once('value') 
-      .then((querySnapshot) => {
-        //querySnapshot.exists(); -- when query is empty -- false || when query is not empty -- true
-        var a = querySnapshot.exists();
-        console.log(a);
-
-          if (a == true) {
-            
-            userMood.once('value')
-              .then((querySnapshot) => {
-                if (!querySnapshot.numChildren()) {
-                  var today_mood = "empty";
-                }
-                if (!querySnapshot.exists()) {
-                  var today_mood = "empty";
-                }
-                var today_mood = querySnapshot.val().mood;
-                console.log("mood today is " + today_mood);
-
-                // retrieve all user 
-
-                res.render("mood_tracker.html", {
-                  title: "Dynamic title",
-                  today_mood : today_mood
-                });
-              });
-          } else if (a == false) {
-            var today_mood = "empty";
-                console.log("mood today is " + today_mood);  
-
-                res.render("mood_tracker.html", {
-                  title: "Dynamic title", today_mood : today_mood
-                });
-          } else {
-            console.log("error adding mood")
-          }
-      }); */
-
       var today_mood = "empty";
+      var prev_moods = {};
 
       moodRef.child(username).get().then((snapshot) => {
         if(snapshot.exists()) {
@@ -733,7 +805,7 @@ module.exports = function (app) {
           let moodDataObj = JSON.stringify(snapshot.val());
           moodDataObj = JSON.parse(moodDataObj);
 
-          var prev_moods = {};
+          
 
           for(let i in moodDataObj) {
             
@@ -754,8 +826,12 @@ module.exports = function (app) {
 
         }
         else {
-          console.log("no data available");
-          res.redirect("/");
+          console.log("No data available");
+          res.render("mood_tracker.html", {
+            title: "Dynamic title", 
+            today_mood : today_mood,
+            prev_moods : prev_moods
+          });
         }
       })
       .catch((error) => {
