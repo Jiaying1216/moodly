@@ -10,7 +10,7 @@ Steps to run the application:
 2. Can choose to run it in VSCode
 3. Open the terminal and go to the directory of our project
 4. Install the necessary framework by typing:
-<br> - Type "npm install" > "npm install node-time-ago"
+<br> - "npm install" > "npm install node-time-ago"
 5. Once the framework has been installed, type "node index.js" to run the project
 6. Open any browser, type "localhost:8089" and the web application will be loaded
 
