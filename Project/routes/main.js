@@ -6,11 +6,10 @@ module.exports = function (app) {
   var timeAgo = require('node-time-ago');
   const cookieParser = require("cookie-parser");
   
-  var usersRef = firebaseRef.child("users");
   var journalRef = firebaseRef.child("journal");
   var signUpRef = firebaseRef.child("sign-up");
-  var signInRef = firebaseRef.child("sign-in");
   var moodRef = firebaseRef.child("mood_tracker");
+  var forumDataRef1 = firebaseRef.child("forumData");
   var forumRef = firebaseRef.child("forum");
   var signUpRef = firebaseRef.child("sign-up");
   var tipsRef = firebaseRef.child("tips");
@@ -197,7 +196,25 @@ module.exports = function (app) {
               "numOfcomments": 0,
               "dateJoined": new Date()
           });
+          forumDataRef1.once('value')
+            .then((querySnapshot) => {
+              if (!querySnapshot.numChildren()) {
+                throw new Error('expected at least one result');
+              }
+                          
+              if (!querySnapshot.exists()) {
+                throw new Error(`Entry ${forumId} not found.`);
+              }
+
+              var TotalUser = querySnapshot.val().TotalUser;
+              updateTotal = TotalUser + 1;
+              forumDataRef1.update({
+                TotalUser: updateTotal
+              })
+              
+            });
           res.render("signIn.html");
+       
         })
         .catch((error) => {
             // console.log('Error creating userr:',error);
@@ -408,10 +425,9 @@ module.exports = function (app) {
   
 
   //ADD REPLY TO FIREBASE
-  app.post("/addReply", function (req, res) {
+ app.post("/addReply", function (req, res) {
     const sessionCookie = req.cookies.session || "";
 
-    username = "user 1";
     forumId = req.body.forumId;
     reply = req.body.userReply;
     let currentTime = new Date();
@@ -422,13 +438,10 @@ module.exports = function (app) {
       .then((userData) => {
         userID = userData.uid;
         req.cookies.userID = userData.uid;
-        console.log("uid: " + userData.uid);
-        console.log("Test: " + req.cookies.userID);
-        console.log("Logged in:", userData.email);
+   
         // test
         thisUserRef = signUpRef.child(userID);
         thisUser = [];
-        // console.log("profile::" + thisUser);
         thisUserRef.once('value')
           .then((querySnapshot) => {
               if (!querySnapshot.numChildren()) { 
@@ -479,11 +492,40 @@ module.exports = function (app) {
                     numOfReplies:  updated_replies_count   
                 });
 
-                res.redirect('back');
+                
+  
+
+                
               })
+            
+            forumDataRef1.once('value')
+              .then((querySnapshot) => {
+                if (!querySnapshot.numChildren()) {
+                  throw new Error('expected at least one result');
+                }
+                            
+                if (!querySnapshot.exists()) {
+                  throw new Error(`Entry ${forumId} not found.`);
+                }
+
+                var Totalcomments = querySnapshot.val().Totalcomments;
+
+                
+
+                updateTotal = Totalcomments + 1;
+
+                forumDataRef1.update({
+                  Totalcomments: updateTotal
+                })
+                
+              });
+            
           });
+       res.redirect('back');
+
       });
     });
+
 
     //ROUTE DIRECT TO FORUM MAIN PAGE ||GET ALL DATA FROM DB TO DISPLAY
   app.get("/forum_mainpage", function (req, res) {
@@ -496,13 +538,29 @@ module.exports = function (app) {
         })
       });
 
-      res.render("forumpage.html", {
-        title: "Dynamic title", forumItem: forumList
+     forumDataRef1.once('value')
+      .then((querySnapshot) => {
+        if (!querySnapshot.numChildren()) {
+          throw new Error('expected at least one result');
+        }
+                    
+        if (!querySnapshot.exists()) {
+          throw new Error(`Entry ${forumId} not found.`);
+        }
+
+        var totalForum = querySnapshot.val().totalForum;
+        var totalComments = querySnapshot.val().Totalcomments;
+        var totalUsers = querySnapshot.val().TotalUser;
+      
+    
+        res.render("forumpage.html", {
+          title: "Dynamic title", forumItem: forumList, totalForum: totalForum, totalComments: totalComments, totalUsers: totalUsers
+        });
       });
     });
 
     //ADD FORUM ITEMS INTO FIREBASE
-  app.post("/addForumItem", function (req, res) {
+ app.post("/addForumItem", function (req, res) {
     const sessionCookie = req.cookies.session || "";
 
     admin
@@ -511,28 +569,24 @@ module.exports = function (app) {
       .then((userData) => {
         userID = userData.uid;
         req.cookies.userID = userData.uid;
-        console.log("uid: " + userData.uid);
-        console.log("Test: " + req.cookies.userID);
-        console.log("Logged in:", userData.email);
         // test
         thisUserRef = signUpRef.child(userID);
         thisUser = [];
-        // console.log("profile::" + thisUser);
         thisUserRef.once('value')
           .then((querySnapshot) => {
-              if (!querySnapshot.numChildren()) { 
-                        throw new Error('expected at least one result');
-              }
+            if (!querySnapshot.numChildren()) {
+              throw new Error('expected at least one result');
+            }
               
-              if (!querySnapshot.exists()) { 
-                throw new Error(`Entry ${userID} not found.`);
-              }
+            if (!querySnapshot.exists()) {
+              throw new Error(`Entry ${userID} not found.`);
+            }
             
             var username = querySnapshot.val().name;
             var numOfForum = querySnapshot.val().numOfForum;
 
             var newforumList = forumRef.push();
-            newforumList.set({ 
+            newforumList.set({
               forumId: newforumList.key,
               username: username,
               forumTitle: req.body.forum_name,
@@ -545,40 +599,63 @@ module.exports = function (app) {
 
             var numForum = numOfForum + 1;
 
-            thisUserRef.update({ 
+            thisUserRef.update({
               numOfForum: numForum
             });
 
-            thisUserRef.child("userForum").push().set({ 
+            thisUserRef.child("userForum").push().set({
               
-                forumId: newforumList.key,
-                username: username,
-                forumTitle: req.body.forum_name,
-                forumContent: req.body.forum_content,
-                numOfLikes: 0,
-                numOfViews: 0,
-                numOfReplies: 0,
-                currentTime: new Date()
+              forumId: newforumList.key,
+              username: username,
+              forumTitle: req.body.forum_name,
+              forumContent: req.body.forum_content,
+              numOfLikes: 0,
+              numOfViews: 0,
+              numOfReplies: 0,
+              currentTime: new Date()
               
             });
 
-        }).catch((error) => {
+          }).catch((error) => {
             console.error(error);
-        });
+          });
       });
     
-      var forumListRef = forumRef;
-      var forumList = [];
+    var forumListRef = forumRef;
+    var forumList = [];
 
-      forumListRef.on('value', (data) => {
-        data.forEach(function (snapshot) {
-          forumList.push(snapshot.val());
+    forumListRef.on('value', (data) => {
+      data.forEach(function (snapshot) {
+        forumList.push(snapshot.val());
+      })
+    });
+    
+    forumDataRef1.once('value')
+      .then((querySnapshot) => {
+        if (!querySnapshot.numChildren()) {
+          throw new Error('expected at least one result');
+        }
+                    
+        if (!querySnapshot.exists()) {
+          throw new Error(`Entry ${forumId} not found.`);
+        }
+
+        var totalForum = querySnapshot.val().totalForum;
+
+        
+
+         updateTotal = totalForum + 1;
+
+        forumDataRef1.update({
+          totalForum: updateTotal
         })
+        
       });
+  
+             
 
       res.redirect('back');
     });
-
     //REGISTER
     app.post('/registerUser', function (req, res, next) {
       var email = req.body.email;
